@@ -1,4 +1,4 @@
-TITLE Program Template     (template.asm)
+TITLE Select Sort     (prog05.asm)
 
 ; Chad H. Glaser:
 ; CS 271 / Prog05 Selection Sort                 Date: 11/17/2014
@@ -18,7 +18,7 @@ RULE1				equ<"This program generats random number from 100 to 999",0>
 RULE2				equ<"then displays the random list, sorts the list, ",0>
 RULE3				equ<"finds the median value, Then displays the list in descending order", 0>
 RULE4				equ<"as well as the median value.", 0>
-USERDATA			equ<"Choose the amount of random integers you want 100 to 999: ", 0>
+USERDATA			equ<"Choose the amount of random integers you want 10 to 200: ", 0>
 NOGO				equ<"That is a No Go! Try Again!",0>
 PLACEHOLD			equ<"FIX ME.....................",0>
 
@@ -34,32 +34,39 @@ MAX					=	999
 
 ; (insert variable definitions here)
 	showTitle			BYTE		TITLE_SCREEN
+	
 	showRule1			BYTE		RULE1
 	showRule2			BYTE		RULE2
 	showRule3			BYTE		RULE3
 	showRule4			BYTE		RULE4
+	
 	showGetData			BYTE		USERDATA
 	showNoGo			BYTE		NOGO
 	showPlace			BYTE		PLACEHOLD
 
+	arraySize			DWORD		?		;User inputs the number of ints they want
+
+
 
 .code
 main PROC
+	call randomize
+	call	intro
 
-; (insert executable instructions here)
-
-	call intro
-	call getData
-	call fillArray
-	call sortList
-	call displayMedian
-	call displayList
+	push	OFFSET arraySize	;pass arraySize by reference
+	call	getData
+	
+	push	arraySize			; pass arraySize by value
+	call	fillArray
+	call	sortList
+	call	displayMedian
+	call	displayList
 
 exit	; exit to operating system
 
 main ENDP
 
-; (insert additional procedures here)
+
 
 ;-----------INTRO PROC-----------
 ;Procedure to display the program and the author of the program.
@@ -96,37 +103,50 @@ main ENDP
 
 
 	;-----------GET DATA PROC-----------
-;Procedure to Get user input								FIX ME!
-;receives: none
-;returns: none
+;Procedure to Get user input for the amount of ints in the list
+;	Which will be the size of the array. Between 10 and 200.
+;	The data will be validated in this procedure 
+;receives: address of arraySize
+;returns: The users input for the amount of ints in the list
 ;preconditions:  none
-;registers changed: EDX, EIP, EFL
-	
-	getData proc
-	mov		EDX, OFFSET showGetData	
-		call	WriteString
-		call	CRLF
-		call	CRLF
-		call	CRLF
+;registers changed: EAX, EBX, EDX, EIP, EFL, ESP
 
-		ret
-	getData ENDP
+getData proc
+	push	EBP
+	mov		EBP, ESP				;return call +0, ArraySize[+8]
+	;get int from the user
+	mov		EBX, [ebp + 8]			; get address of arraySize
+	mov		EDX, OFFSET showGetData	;Prompt user for input
+	call	WriteString
+	call	readint
+	mov		[EBX], EAX				;Store the value in arraySize
+	
+	pop		EBP
+	ret		4
+getData	ENDP
 
 ;-----------Fill Array PROC-----------
 ;Procedure to Fill the array with Random Numbers.				FIX ME!
-;receives: none
+;receives: arraySize
 ;returns: none
 ;preconditions:  none
 ;registers changed: EDX, EIP, EFL
 	
 	fillArray proc
+	push	EBP
+	mov		EBP, ESP
+
+	mov		EAX, [EBP + 8]
+	call	writeDec
+	call	CRLF
+	
 	mov		EDX, OFFSET showPlace	
 		call	WriteString
 		call	CRLF
 		call	CRLF
 		call	CRLF
-
-		ret
+	pop		EBP
+	ret		4
 	fillArray ENDP
 
 
