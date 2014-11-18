@@ -14,10 +14,14 @@ INCLUDE Irvine32.inc
 
 ; (insert constant definitions here)
 TITLE_SCREEN		equ<"		Select Sort by CHAD H. GLASER",0 >
-RULE1				equ<"The min and max",0>
-RULE2				equ<"How many numbers do you want to display?",0>
-RULE3				equ<"What range do you want the numbers to be in?", 0>
-USERDATA				equ<"I am getting data now", 0>
+RULE1				equ<"This program generats random number from 100 to 999",0>
+RULE2				equ<"then displays the random list, sorts the list, ",0>
+RULE3				equ<"finds the median value, Then displays the list in descending order", 0>
+RULE4				equ<"as well as the median value.", 0>
+USERDATA			equ<"Choose the amount of random integers you want 100 to 999: ", 0>
+NOGO				equ<"That is a No Go! Try Again!",0>
+PLACEHOLD			equ<"FIX ME.....................",0>
+
 
 MIN					=	10
 MAX					=	200
@@ -33,7 +37,10 @@ MAX					=	999
 	showRule1			BYTE		RULE1
 	showRule2			BYTE		RULE2
 	showRule3			BYTE		RULE3
+	showRule4			BYTE		RULE4
 	showGetData			BYTE		USERDATA
+	showNoGo			BYTE		NOGO
+	showPlace			BYTE		PLACEHOLD
 
 
 .code
@@ -42,8 +49,11 @@ main PROC
 ; (insert executable instructions here)
 
 	call intro
-	call rules
 	call getData
+	call fillArray
+	call sortList
+	call displayMedian
+	call displayList
 
 exit	; exit to operating system
 
@@ -63,20 +73,7 @@ main ENDP
 		call	WriteString
 		call	CRLF
 		call	CRLF
-		call	CRLF
-
-		ret
-	intro ENDP
-
-
-;-----------RULES PROC-----------
-;Procedure to display the program and the author of the program.
-;receives: none
-;returns: none
-;preconditions:  none
-;registers changed: EDX, EIP, EFL
-	
-	rules proc
+		
 	mov		EDX, OFFSET showrule1
 		call	WriteString
 		call	CRLF
@@ -86,12 +83,20 @@ main ENDP
 	mov		EDX, OFFSET showrule3
 		call	WriteString
 		call	CRLF
+	mov		EDX, OFFSET showrule4
+		call	WriteString
+		call	CRLF
+		call	CRLF
+		call	CRLF
 		ret
-	rules ENDP
+	intro ENDP
+
+
+
 
 
 	;-----------GET DATA PROC-----------
-;Procedure to display the program and the author of the program.
+;Procedure to Get user input								FIX ME!
 ;receives: none
 ;returns: none
 ;preconditions:  none
@@ -107,10 +112,76 @@ main ENDP
 		ret
 	getData ENDP
 
+;-----------Fill Array PROC-----------
+;Procedure to Fill the array with Random Numbers.				FIX ME!
+;receives: none
+;returns: none
+;preconditions:  none
+;registers changed: EDX, EIP, EFL
+	
+	fillArray proc
+	mov		EDX, OFFSET showPlace	
+		call	WriteString
+		call	CRLF
+		call	CRLF
+		call	CRLF
+
+		ret
+	fillArray ENDP
 
 
+;-----------Sort List PROC-----------
+;Procedure to sort the array							FIX ME!
+;receives: none
+;returns: none
+;preconditions:  none
+;registers changed: EDX, EIP, EFL
+	
+	sortList proc
+	mov		EDX, OFFSET showPlace	
+		call	WriteString
+		call	CRLF
+		call	CRLF
+		call	CRLF
 
+		ret
+	sortList ENDP
 
+	
+;-----------Display Median PROC-----------
+;Procedure to calculate and display the list median							FIX ME!
+;receives: none
+;returns: none
+;preconditions:  none
+;registers changed: EDX, EIP, EFL
+	
+	displayMedian proc
+	mov		EDX, OFFSET showPlace	
+		call	WriteString
+		call	CRLF
+		call	CRLF
+		call	CRLF
+
+		ret
+	displayMedian ENDP
+	
+	
+;-----------Display List PROC-----------
+;Procedure to  Display the list to the console						FIX ME!
+;receives: none
+;returns: none
+;preconditions:  none
+;registers changed: EDX, EIP, EFL
+	
+	displayList proc
+	mov		EDX, OFFSET showPlace	
+		call	WriteString
+		call	CRLF
+		call	CRLF
+		call	CRLF
+
+		ret
+	displayList ENDP
 
 
 
