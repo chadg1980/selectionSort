@@ -26,7 +26,7 @@ PLACEHOLD			equ<"FIX ME.....................",0>
 MIN					=	10
 MAX					=	200
 LOWNUM				=	100
-MAX					=	999
+HINUM				=	999
 
 
 
@@ -45,19 +45,23 @@ MAX					=	999
 	showPlace			BYTE		PLACEHOLD
 
 	arraySize			DWORD		?		;User inputs the number of ints they want
-
+	numberList			DWORD	MAX DUP(?)
 
 
 .code
 main PROC
-	call randomize
+	call	randomize
 	call	intro
 
 	push	OFFSET arraySize	;pass arraySize by reference
 	call	getData
 	
+	push	OFFSET numberList	; First element of the array passed by reference
 	push	arraySize			; pass arraySize by value
 	call	fillArray
+	
+	
+	
 	call	sortList
 	call	displayMedian
 	call	displayList
@@ -113,32 +117,61 @@ main ENDP
 
 getData proc
 	push	EBP
-	mov		EBP, ESP				;return call +0, ArraySize[+8]
+	mov		EBP, ESP				
 	;get int from the user
 	mov		EBX, [ebp + 8]			; get address of arraySize
+tryAgain:
 	mov		EDX, OFFSET showGetData	;Prompt user for input
 	call	WriteString
 	call	readint
 	mov		[EBX], EAX				;Store the value in arraySize
 	
+	cmp		EAX, MIN
+	JGE		goOver
+	mov		EDX, OFFSET	showNoGo
+		call	WriteString
+		call	CRLF
+	jmp		tryAgain
+
+goOver:
+	cmp		EAX, MAX
+	JLE		goOut
+	mov		EDX, OFFSET	showNoGo
+		call	WriteString
+		call	CRLF
+	jmp		tryAgain
+
+goOut:
 	pop		EBP
 	ret		4
 getData	ENDP
 
 ;-----------Fill Array PROC-----------
 ;Procedure to Fill the array with Random Numbers.				FIX ME!
-;receives: arraySize
-;returns: none
-;preconditions:  none
-;registers changed: EDX, EIP, EFL
-	
-	fillArray proc
-	push	EBP
+;receives: arraySize, by value and Numberlist by Reference
+;returns: The array filled with random numbers in a random order
+;preconditions:  arraySize is entered by the user and within range
+;registers changed: EAX, EDX, EBX, EIP, EFL
+; I grabbed some code for this from Assembly Language for the x86 Processpr (6th edition)
+;page 283 (I started on my own, but it looked similar, so I might as well site it)
+
+
+;NumberList		[EBP + 12]
+;arraySize		[EBP + 8]
+;return address [EBP + 4]
+;EBP			[0]
+fillArray proc
+	push	EBP				
 	mov		EBP, ESP
 
-	mov		EAX, [EBP + 8]
-	call	writeDec
-	call	CRLF
+	mov		ECX, [EBP + 8]					;Counter, arraySize 
+	mov		ESI, [EBP+12]					;First element of the 
+TOL:
+	mov		EAX, [HINUM	- LOWNUM +1]		;This is from the book
+	call	RandomRange						;Assembly Language for the x86 Processpr (6th edition)
+	mov		[ESI], EAX						;Page 284
+	add		ESI, 4
+	loop tol	
 	
 	mov		EDX, OFFSET showPlace	
 		call	WriteString
@@ -146,7 +179,7 @@ getData	ENDP
 		call	CRLF
 		call	CRLF
 	pop		EBP
-	ret		4
+	ret		8
 	fillArray ENDP
 
 
