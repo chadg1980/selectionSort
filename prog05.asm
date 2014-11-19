@@ -21,7 +21,9 @@ RULE4				equ<"as well as the median value.", 0>
 USERDATA			equ<"Choose the amount of random integers you want 10 to 200: ", 0>
 NOGO				equ<"That is a No Go! Try Again!",0>
 PLACEHOLD			equ<"FIX ME.....................",0>
-
+UNSORTED			equ<"Unsorted Number List: ",0>
+SORTED				equ<"Sorted Number List: ",0>
+THEMEDIAN			equ<"The median: ",0>
 
 MIN					=	10
 MAX					=	200
@@ -44,26 +46,47 @@ HINUM				=	999
 	showNoGo			BYTE		NOGO
 	showPlace			BYTE		PLACEHOLD
 
+	showUnsorted		BYTE		UNSORTED
+	showsorted			BYTE		SORTED
+	showmedian			BYTE		THEMEDIAN
+	
 	arraySize			DWORD		?		;User inputs the number of ints they want
-	numberList			DWORD	MAX DUP(?)
+	numberList			DWORD		MAX DUP(?)
 
+	;tens				DWORD		0		;counter to add a new line every ten integers
 
+;---------------MAIN PROC-----------
 .code
 main PROC
 	call	randomize
 	call	intro
 
-	push	OFFSET arraySize	;pass arraySize by reference
+		push	OFFSET arraySize	;pass arraySize by reference
 	call	getData
 	
-	push	OFFSET numberList	; First element of the array passed by reference
-	push	arraySize			; pass arraySize by value
+		push	OFFSET numberList	; First element of the array passed by reference
+		push	arraySize			; pass arraySize by value
 	call	fillArray
 	
+		mov		EDX, offset showUnsorted	;"Unsorted Number List: "
+			call	WriteString				; Stating that before the call
+			call	CRLF
+		push	OFFSET numberList	; First element of the array passed by reference
+		push	arraySize			; pass arraySize by value
+	call	displayList
 	
-	
+		push	OFFSET numberList	; First element of the array passed by reference
+		push	arraySize			; pass arraySize by value
 	call	sortList
+	
+	
 	call	displayMedian
+
+	mov		EDX, offset showSorted
+		call	WriteString
+		call	CRLF
+	push	OFFSET numberList	; First element of the array passed by reference
+	push	arraySize			; pass arraySize by value
 	call	displayList
 
 exit	; exit to operating system
@@ -119,7 +142,7 @@ getData proc
 	push	EBP
 	mov		EBP, ESP				
 	;get int from the user
-	mov		EBX, [ebp + 8]			; get address of arraySize
+	mov		EBX, [EBP + 8]			; get address of arraySize
 tryAgain:
 	mov		EDX, OFFSET showGetData	;Prompt user for input
 	call	WriteString
@@ -147,7 +170,7 @@ goOut:
 getData	ENDP
 
 ;-----------Fill Array PROC-----------
-;Procedure to Fill the array with Random Numbers.				FIX ME!
+;Procedure to Fill the array with Random Numbers.				
 ;receives: arraySize, by value and Numberlist by Reference
 ;returns: The array filled with random numbers in a random order
 ;preconditions:  arraySize is entered by the user and within range
@@ -165,19 +188,15 @@ fillArray proc
 	mov		EBP, ESP
 
 	mov		ECX, [EBP + 8]					;Counter, arraySize 
-	mov		ESI, [EBP+12]					;First element of the 
+	mov		ESI, [EBP+12]					;First element of the array
 TOL:
 	mov		EAX, [HINUM	- LOWNUM +1]		;This is from the book
 	call	RandomRange						;Assembly Language for the x86 Processpr (6th edition)
-	mov		[ESI], EAX						;Page 284
-	add		ESI, 4
-	loop tol	
+	mov		[ESI], EAX						;Page 284 RandomRange is a library function call
+	add		ESI, 4							;Move to the next array element (DWORD = 4)
+loop tol									;tol(top of loop)
 	
-	mov		EDX, OFFSET showPlace	
-		call	WriteString
-		call	CRLF
-		call	CRLF
-		call	CRLF
+	
 	pop		EBP
 	ret		8
 	fillArray ENDP
@@ -189,15 +208,30 @@ TOL:
 ;returns: none
 ;preconditions:  none
 ;registers changed: EDX, EIP, EFL
-	
+
+;NumberList		[EBP + 12]
+;arraySize		[EBP + 8]
+;return address [EBP + 4]
+;EBP			[0]	
 	sortList proc
+	
+	push	EBP				
+	mov		EBP, ESP
+	
+	
+	
+	
 	mov		EDX, OFFSET showPlace	
 		call	WriteString
 		call	CRLF
 		call	CRLF
 		call	CRLF
-
-		ret
+	
+	
+	
+	pop		EBP
+	ret		8
+	
 	sortList ENDP
 
 	
@@ -209,31 +243,76 @@ TOL:
 ;registers changed: EDX, EIP, EFL
 	
 	displayMedian proc
+	push	EBP				
+	mov		EBP, ESP
+
+	mov		EDX, OFFSET showMedian	
+		call	WriteString
+		call	CRLF
 	mov		EDX, OFFSET showPlace	
 		call	WriteString
 		call	CRLF
 		call	CRLF
 		call	CRLF
-
-		ret
+	
+	pop		EBP
+		ret	4
 	displayMedian ENDP
 	
 	
 ;-----------Display List PROC-----------
-;Procedure to  Display the list to the console						FIX ME!
-;receives: none
-;returns: none
-;preconditions:  none
-;registers changed: EDX, EIP, EFL
-	
-	displayList proc
-	mov		EDX, OFFSET showPlace	
-		call	WriteString
-		call	CRLF
-		call	CRLF
-		call	CRLF
+;Procedure to  Display the list to the console				
+;receives: 
+;returns: arraySize by value, and the first element of the array numberList
+;preconditions:  NumberList is filled in, arraySize is an int within range
+;registers changed: EAX, EDX, EIP, EFL, EBP, ESI
 
-		ret
+
+;NumberList		[EBP + 20]
+;arraySize		[EBP + 16]
+;ten			[EBP - 4] I do not know why adding a local variable adds so much???
+;return address [EBP + 4] I am looking at page 287 of 6th edition, 
+;EBP			[0]
+	displayList proc
+		local tens:DWORD ;local var, to count to 10, I need a line every 10 elements
+
+	push	EBP				
+	mov		EBP, ESP
+	
+	mov		ECX, [EBP + 16]					;Counter, arraySize 
+	mov		ESI, [EBP+20]					;Memory of the first element of the array
+	
+	mov		tens, 0							;before the loop, tens gets 0.
+	
+
+
+displayL:
+	mov		AL, 20h						;Blank for readability
+	call	writeChar
+	call	writeChar
+	call	writeChar
+
+	mov		EAX, [ESI]					;put the array element in EAX to be dispayed
+	call	WriteDec
+	add		ESI, 4						;go to the next element in the array
+	
+	inc		tens						;increment the counter
+	mov		EAX, tens					;Check for the 10th element
+	cdq									;DIVIDE, if no remainder add a line
+	mov		EBX, 10
+	div		EBX
+		cmp		EDX, 0
+		JNZ		noLine
+		call	CRLF					;add a new line if a miltiple of 10
+	noLine:
+		
+loop displayL
+	call	CRLF						;Blank line for seperation on console
+	call	CRLF
+	
+	
+	pop		EBP
+		ret	8
 	displayList ENDP
 
 
