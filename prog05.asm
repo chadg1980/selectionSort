@@ -190,8 +190,11 @@ fillArray proc
 	mov		ECX, [EBP + 8]					;Counter, arraySize 
 	mov		ESI, [EBP+12]					;First element of the array
 TOL:
-	mov		EAX, [HINUM	- LOWNUM +1]		;This is from the book
-	call	RandomRange						;Assembly Language for the x86 Processpr (6th edition)
+	mov		EAX, [HINUM - LOWNUM]				;This is from the book
+ 	call	RandomRange				;Assembly Language for the x86 Processpr (6th edition)
+	add		EAX, LOWNUM
+	
+					
 	mov		[ESI], EAX						;Page 284 RandomRange is a library function call
 	add		ESI, 4							;Move to the next array element (DWORD = 4)
 loop tol									;tol(top of loop)
@@ -209,16 +212,22 @@ loop tol									;tol(top of loop)
 ;preconditions:  none
 ;registers changed: EDX, EIP, EFL
 
-;NumberList		[EBP + 12]
-;arraySize		[EBP + 8]
+;NumberList		[EBP + 24]
+;arraySize		[EBP + 20]
 ;return address [EBP + 4]
 ;EBP			[0]	
+;k				[EBP - 4]
+;j				[EBP - 8
 	sortList proc
-	
+		local k:DWORD
+		local j:DWORD
+
 	push	EBP				
 	mov		EBP, ESP
+	mov		ECX, [EBP + 20]					;Counter, arraySize 
+	mov		ESI, [EBP + 24]					;First element of the array
 	
-	
+
 	
 	
 	mov		EDX, OFFSET showPlace	
@@ -274,7 +283,7 @@ loop tol									;tol(top of loop)
 ;return address [EBP + 4] I am looking at page 287 of 6th edition, 
 ;EBP			[0]
 	displayList proc
-		local tens:DWORD ;local var, to count to 10, I need a line every 10 elements
+		local tens:DWORD  ;local var, to count to 10, I need a line every 10 elements
 
 	push	EBP				
 	mov		EBP, ESP
@@ -283,7 +292,7 @@ loop tol									;tol(top of loop)
 	mov		ESI, [EBP+20]					;Memory of the first element of the array
 	
 	mov		tens, 0							;before the loop, tens gets 0.
-	
+	push	tens
 
 
 displayL:
@@ -296,8 +305,10 @@ displayL:
 	call	WriteDec
 	add		ESI, 4						;go to the next element in the array
 	
+	pop		tens
 	inc		tens						;increment the counter
 	mov		EAX, tens					;Check for the 10th element
+	push	tens
 	cdq									;DIVIDE, if no remainder add a line
 	mov		EBX, 10
 	div		EBX
@@ -310,7 +321,7 @@ loop displayL
 	call	CRLF						;Blank line for seperation on console
 	call	CRLF
 	
-	
+	pop		tens
 	pop		EBP
 		ret	8
 	displayList ENDP
