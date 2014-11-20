@@ -217,16 +217,27 @@ loop tol									;tol(top of loop)
 ;return address [EBP + 4]
 ;EBP			[0]	
 ;k				[EBP - 4]
-;j				[EBP - 8
+;j				[EBP - 8]
 	sortList proc
 		local k:DWORD
 		local j:DWORD
+		
 
 	push	EBP				
 	mov		EBP, ESP
-	mov		ECX, [EBP + 20]					;Counter, arraySize 
-	mov		ESI, [EBP + 24]					;First element of the array
-	
+	mov		ECX, [EBP + 16]					;Counter, arraySize 
+	mov		ESI, [EBP + 20]					;First element of the array
+	mov		k, 0
+	mov		EBX, k
+	add		EBX, 4
+	mov		j, EBX
+;top:
+	add		ESI, k
+	cmp		ESI, [ESI + j]
+	;jge top
+	push	k
+	push	j
+	call swap
 
 	
 	
@@ -326,7 +337,40 @@ loop displayL
 		ret	8
 	displayList ENDP
 
+;-----------swap PROC-----------
+;Procedure to calculate and display the list median							FIX ME!
+;receives: none
+;returns: none
+;preconditions:  none
+;registers changed: EDX, EIP, EFL
 
+;k				[EBP + 16]
+;j				[EBP + 12]
+;return address [EBP + 4]
+;EBP			[0]	
+;temp			[EBP - 4]
+	swap proc
+	local	temp:DWORD
+	push	EBP				
+	mov		EBP, ESP
+
+	mov		ECX, [EBP + 12]					;k
+	mov		ESI, [EBP + 16]					;j
+
+	mov		temp, ESI
+	mov		ESI, [ESI+ECX]
+	sub		ESI, ECX
+	mov		ESI, temp
+	
+	mov		EDX, OFFSET showPlace	
+		call	WriteString
+		call	CRLF
+		call	CRLF
+		call	CRLF
+	
+	pop		EBP
+		ret	4
+	swap ENDP
 
 
 
