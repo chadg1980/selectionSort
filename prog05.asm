@@ -228,53 +228,53 @@ loop tol									;tol(top of loop)
 	mov		ECX, [EBP + 20]					;Counter, arraySize 
 	mov		ESI, [EBP + 24]					;First element of the array
 	mov		k, 0
-	
-	mov		EBX, k					; I had to use EBX to store k, because
-									;when I push ECX, k would also get ECX
-	mov		j, EBX					;for (j = k+1)  +4 for a DWORD the inner loop
-
-	inc		j
-	
+	mov		EBX, k
+		
 outer:
 	
 	mov		k, EBX
+	
+	mov		j, EBX					
+	
+
 	mov		EAX, 4
 	mul		EBX
 	mov		EBX, EAX
 	add		ESI, EBX
+	mov		EBX, 0
 	
 inner:
-	mov		EBX, j			;inner loop counter
 	mov		EAX, 4
-	mul		EBX
+	add		EAX, EBX
 	mov		EBX, EAX
 	mov		EAX, [ESI]		
 	
-	mov		EBX, [ESI + EBX]
-	cmp		EAX, EBX
+	mov		EDX, [ESI + EBX]
+	cmp		EAX, EDX
 	jge noSwap
 	
+	mov		[ESI], EDX					;Swap, values stored in registers go in the
+	mov		[ESI+EBX], EAX				;other array value location
 	
-	call swap
-
+	
 noSwap:
 	inc		j
 mov		ECX, [EBP + 20]		
-cmp		j, ECX
-jl		inner
+cmp		ECX, j
+jge		inner
 	
 
 	inc		k
 	mov		EBX, k
 	mov		EAX, ECX
 	sub		EAX, 1
-	cmp		EAX, EBX
+	cmp		EBX, EAX
 jl	outer
 	
 		
 	
 	pop		EBP
-	ret		4
+	ret		8
 	
 	sortList ENDP
 
@@ -360,41 +360,6 @@ loop displayL
 	pop		EBP
 		ret	8
 	displayList ENDP
-
-;-----------swap PROC-----------
-;Procedure to calculate and display the list median							FIX ME!
-;receives: none
-;returns: none
-;preconditions:  none
-;registers changed: EDX, EIP, EFL
-
-;k				[EBP + 16]
-;j				[EBP + 12]
-;return address [EBP + 4]
-;EBP			[0]	
-;temp			[EBP - 4]
-	swap proc
-	;local	temp:DWORD
-	push	EBP				
-	mov		EBP, ESP
-
-	;mov		EAX, [EBP + 12]					;k
-	;mov		EBX, [EBP + 16]					;j
-
-	;mov		temp, [ESI]
-	;mov		ESI, [ESI+ECX]
-	;sub		ESI, EAX
-	;mov		ESI, temp
-	
-	mov		EDX, OFFSET showPlace	
-		call	WriteString
-		call	CRLF
-		call	CRLF
-		call	CRLF
-	
-	pop		EBP
-		ret	4
-	swap ENDP
 
 
 
