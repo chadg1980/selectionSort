@@ -225,32 +225,56 @@ loop tol									;tol(top of loop)
 
 	push	EBP				
 	mov		EBP, ESP
-	mov		ECX, [EBP + 16]					;Counter, arraySize 
-	mov		ESI, [EBP + 20]					;First element of the array
+	mov		ECX, [EBP + 20]					;Counter, arraySize 
+	mov		ESI, [EBP + 24]					;First element of the array
 	mov		k, 0
-	mov		EBX, k
-	add		EBX, 4
-	mov		j, EBX
-;top:
-	add		ESI, k
-	cmp		ESI, [ESI + j]
-	;jge top
-	push	k
-	push	j
+	
+	mov		EBX, k					; I had to use EBX to store k, because
+									;when I push ECX, k would also get ECX
+	mov		j, EBX					;for (j = k+1)  +4 for a DWORD the inner loop
+
+	inc		j
+	
+outer:
+	
+	mov		k, EBX
+	mov		EAX, 4
+	mul		EBX
+	mov		EBX, EAX
+	add		ESI, EBX
+	
+inner:
+	mov		EBX, j			;inner loop counter
+	mov		EAX, 4
+	mul		EBX
+	mov		EBX, EAX
+	mov		EAX, [ESI]		
+	
+	mov		EBX, [ESI + EBX]
+	cmp		EAX, EBX
+	jge noSwap
+	
+	
 	call swap
 
+noSwap:
+	inc		j
+mov		ECX, [EBP + 20]		
+cmp		j, ECX
+jl		inner
 	
+
+	inc		k
+	mov		EBX, k
+	mov		EAX, ECX
+	sub		EAX, 1
+	cmp		EAX, EBX
+jl	outer
 	
-	mov		EDX, OFFSET showPlace	
-		call	WriteString
-		call	CRLF
-		call	CRLF
-		call	CRLF
-	
-	
+		
 	
 	pop		EBP
-	ret		8
+	ret		4
 	
 	sortList ENDP
 
@@ -350,17 +374,17 @@ loop displayL
 ;EBP			[0]	
 ;temp			[EBP - 4]
 	swap proc
-	local	temp:DWORD
+	;local	temp:DWORD
 	push	EBP				
 	mov		EBP, ESP
 
-	mov		ECX, [EBP + 12]					;k
-	mov		ESI, [EBP + 16]					;j
+	;mov		EAX, [EBP + 12]					;k
+	;mov		EBX, [EBP + 16]					;j
 
-	mov		temp, ESI
-	mov		ESI, [ESI+ECX]
-	sub		ESI, ECX
-	mov		ESI, temp
+	;mov		temp, [ESI]
+	;mov		ESI, [ESI+ECX]
+	;sub		ESI, EAX
+	;mov		ESI, temp
 	
 	mov		EDX, OFFSET showPlace	
 		call	WriteString
