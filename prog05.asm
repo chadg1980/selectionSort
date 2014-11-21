@@ -51,7 +51,7 @@ HINUM				=	999
 	showmedian			BYTE		THEMEDIAN
 	
 	arraySize			DWORD		?		;User inputs the number of ints they want
-	numberList			DWORD		MAX DUP(?)
+	numberList			DWORD		MAX dup(?)
 
 	;tens				DWORD		0		;counter to add a new line every ten integers
 
@@ -72,28 +72,28 @@ main PROC
 	call	CRLF
 
 
-		mov		EDX, offset showUnsorted	;"Unsorted Number List: "
-			call	WriteString				; Stating that before the call
-			call	CRLF
-		push	OFFSET numberList	; First element of the array passed by reference
-		push	arraySize			; pass arraySize by value
+	mov		EDX, offset showUnsorted	;"Unsorted Number List: "
+	call	WriteString				; Stating that before the call
+	call	CRLF
+	push	OFFSET numberList	; First element of the array passed by reference
+	push	arraySize			; pass arraySize by value
 	call	displayList
 	call	CRLF
 
 
 
-		push	OFFSET numberList	; First element of the array passed by reference
-		push	arraySize			; pass arraySize by value
+	push	OFFSET numberList	; First element of the array passed by reference
+	push	arraySize			; pass arraySize by value
 	call	sortList
 	call	CRLF
 
 	
-	call	displayMedian
-	call	CRLF
+	;call	displayMedian
+	;call	CRLF
 
 	mov		EDX, offset showSorted
-		call	WriteString
-		call	CRLF
+	call	WriteString
+	call	CRLF
 	push	OFFSET numberList	; First element of the array passed by reference
 	push	arraySize			; pass arraySize by value
 	call	displayList
@@ -243,14 +243,7 @@ loop tol									;tol(top of loop)
 outer:
 	
 	mov		k, EBX
-	
-	mov		j, EBX					
-	
-
-	mov		EAX, 4
-	mul		EBX
-	mov		EBX, EAX
-	add		ESI, EBX
+	mov		j, EBX				
 	mov		EBX, 0
 	
 inner:
@@ -269,15 +262,17 @@ inner:
 	
 noSwap:
 	inc		j
-mov		ECX, [EBP + 20]		
-cmp		ECX, j
-jge		inner
+mov		ECX, [EBP + 20]	
+cmp		j, ECX
+jl		inner
 	
 
 	inc		k
+	mov		ECX, [EBP + 20]	
 	mov		EBX, k
+	add		ESI, 4
 	mov		EAX, ECX
-	sub		EAX, 1
+	DEC		EAX
 	cmp		EBX, EAX
 jl	outer
 	
