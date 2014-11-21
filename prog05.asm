@@ -69,28 +69,20 @@ main PROC
 	push	arraySize			; pass arraySize by value
 	call	fillArray
 	
-	mov		EDX, offset showUnsorted	;"Unsorted Number List: "
-	call	WriteString				; Stating that before the call
-	call	CRLF
+	push	OFFSET	showUnsorted
 	push	OFFSET numberList	; First element of the array passed by reference
 	push	arraySize			; pass arraySize by value
 	call	displayList
-	
-
-
-
+		
 	push	OFFSET numberList	; First element of the array passed by reference
 	push	arraySize			; pass arraySize by value
 	call	sortList
 	
-
 	push	OFFSET numberList	; First element of the array passed by reference
 	push	arraySize			; pass arraySize by value
 	call	displayMedian
 	
-	mov		EDX, offset showSorted
-	call	WriteString
-	call	CRLF
+	push	OFFSET	showSorted	;
 	push	OFFSET numberList	; First element of the array passed by reference
 	push	arraySize			; pass arraySize by value
 	call	displayList
@@ -172,8 +164,9 @@ goOver:
 	jmp		tryAgain
 
 goOut:
-	pop		EBP
-	ret		4
+	call	CRLF					;line
+	pop		EBP						;prepare to return	
+	ret		4						;return
 getData	ENDP
 
 ;-----------Fill Array PROC-----------
@@ -372,6 +365,9 @@ call	CRLF
 	
 	mov		ECX, [EBP + 16]					;Counter, arraySize 
 	mov		ESI, [EBP + 20]					;Memory of the first element of the array
+	mov		EDX, [EBP + 24]					;Memory of title
+	call	WriteString
+	Call	CRLF
 	
 	mov		tens, 0							;before the loop, tens gets 0.
 	push	tens
@@ -394,10 +390,10 @@ displayL:
 	cdq									;DIVIDE, if no remainder add a line
 	mov		EBX, 10
 	div		EBX
-		cmp		EDX, 0
-		JNZ		noLine
-		call	CRLF					;add a new line if a miltiple of 10
-	noLine:
+	cmp		EDX, 0
+JNZ		noLine
+	call	CRLF					;add a new line if a miltiple of 10
+noLine:
 		
 loop displayL
 	call	CRLF						;Blank line for seperation on console
@@ -405,7 +401,7 @@ loop displayL
 	
 	pop		tens
 	pop		EBP
-		ret	8
+		ret	12
 	displayList ENDP
 
 
