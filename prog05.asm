@@ -60,27 +60,36 @@ HINUM				=	999
 main PROC
 	call	randomize
 	call	intro
+	call	CRLF
 
-		push	OFFSET arraySize	;pass arraySize by reference
+	push	OFFSET arraySize	;pass arraySize by reference
 	call	getData
+	call	CRLF
 	
-		push	OFFSET numberList	; First element of the array passed by reference
-		push	arraySize			; pass arraySize by value
+	push	OFFSET numberList	; First element of the array passed by reference
+	push	arraySize			; pass arraySize by value
 	call	fillArray
-	
+	call	CRLF
+
+
 		mov		EDX, offset showUnsorted	;"Unsorted Number List: "
 			call	WriteString				; Stating that before the call
 			call	CRLF
 		push	OFFSET numberList	; First element of the array passed by reference
 		push	arraySize			; pass arraySize by value
 	call	displayList
-	
+	call	CRLF
+
+
+
 		push	OFFSET numberList	; First element of the array passed by reference
 		push	arraySize			; pass arraySize by value
 	call	sortList
-	
+	call	CRLF
+
 	
 	call	displayMedian
+	call	CRLF
 
 	mov		EDX, offset showSorted
 		call	WriteString
@@ -88,6 +97,7 @@ main PROC
 	push	OFFSET numberList	; First element of the array passed by reference
 	push	arraySize			; pass arraySize by value
 	call	displayList
+	call	CRLF
 
 exit	; exit to operating system
 
@@ -324,7 +334,7 @@ jl	outer
 	mov		EBP, ESP
 	
 	mov		ECX, [EBP + 16]					;Counter, arraySize 
-	mov		ESI, [EBP+20]					;Memory of the first element of the array
+	mov		ESI, [EBP + 20]					;Memory of the first element of the array
 	
 	mov		tens, 0							;before the loop, tens gets 0.
 	push	tens
