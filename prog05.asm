@@ -59,45 +59,42 @@ HINUM				=	999
 .code
 main PROC
 	call	randomize
+	
 	call	intro
-	call	CRLF
-
+	
 	push	OFFSET arraySize	;pass arraySize by reference
 	call	getData
-	call	CRLF
-	
+		
 	push	OFFSET numberList	; First element of the array passed by reference
 	push	arraySize			; pass arraySize by value
 	call	fillArray
-	call	CRLF
-
-
+	
 	mov		EDX, offset showUnsorted	;"Unsorted Number List: "
 	call	WriteString				; Stating that before the call
 	call	CRLF
 	push	OFFSET numberList	; First element of the array passed by reference
 	push	arraySize			; pass arraySize by value
 	call	displayList
-	call	CRLF
+	
 
 
 
 	push	OFFSET numberList	; First element of the array passed by reference
 	push	arraySize			; pass arraySize by value
 	call	sortList
-	call	CRLF
-
 	
-	;call	displayMedian
-	;call	CRLF
 
+	push	OFFSET numberList	; First element of the array passed by reference
+	push	arraySize			; pass arraySize by value
+	call	displayMedian
+	
 	mov		EDX, offset showSorted
 	call	WriteString
 	call	CRLF
 	push	OFFSET numberList	; First element of the array passed by reference
 	push	arraySize			; pass arraySize by value
 	call	displayList
-	call	CRLF
+	
 
 exit	; exit to operating system
 
@@ -113,13 +110,13 @@ main ENDP
 ;registers changed: EDX, EIP, EFL
 	
 	intro proc
-	mov		EDX, OFFSET showTitle
+	mov		EDX, OFFSET showTitle	;Displays the title with the authors name
 		call	WriteString
 		call	CRLF
 		call	CRLF
 		
-	mov		EDX, OFFSET showrule1
-		call	WriteString
+	mov		EDX, OFFSET showrule1	;Displays what the program does as well as the 
+		call	WriteString			; range of input for the user
 		call	CRLF
 	mov		EDX, OFFSET showrule2
 		call	WriteString
@@ -156,22 +153,22 @@ getData proc
 tryAgain:
 	mov		EDX, OFFSET showGetData	;Prompt user for input
 	call	WriteString
-	call	readint
-	mov		[EBX], EAX				;Store the value in arraySize
-	
+	call	readint					;Store the value in arraySize
+	mov		[EBX], EAX				;in the memory location of EBX
+					
 	cmp		EAX, MIN
-	JGE		goOver
-	mov		EDX, OFFSET	showNoGo
-		call	WriteString
-		call	CRLF
-	jmp		tryAgain
-
+	JGE		goOver					;Data validation loop
+	mov		EDX, OFFSET	showNoGo	;Shows a message if the number is not in range
+	call	WriteString
+	call	CRLF
+	jmp		tryAgain				;IF the data is not in range, jump to tryAgain
+									;to get another input
 goOver:
 	cmp		EAX, MAX
 	JLE		goOut
 	mov		EDX, OFFSET	showNoGo
-		call	WriteString
-		call	CRLF
+	call	WriteString
+	call	CRLF
 	jmp		tryAgain
 
 goOut:
@@ -200,11 +197,9 @@ fillArray proc
 	mov		ECX, [EBP + 8]					;Counter, arraySize 
 	mov		ESI, [EBP+12]					;First element of the array
 TOL:
-	mov		EAX, [HINUM - LOWNUM]				;This is from the book
+	mov		EAX, [HINUM - LOWNUM]			;This is from the book
  	call	RandomRange				;Assembly Language for the x86 Processpr (6th edition)
 	add		EAX, LOWNUM
-	
-					
 	mov		[ESI], EAX						;Page 284 RandomRange is a library function call
 	add		ESI, 4							;Move to the next array element (DWORD = 4)
 loop tol									;tol(top of loop)
@@ -216,11 +211,11 @@ loop tol									;tol(top of loop)
 
 
 ;-----------Sort List PROC-----------
-;Procedure to sort the array							FIX ME!
-;receives: none
-;returns: none
-;preconditions:  none
-;registers changed: EDX, EIP, EFL
+;Procedure to sort the array		
+;receives: ArraySize by value and the offset of the first element of NumberList
+;returns: A sorted array in NumberList
+;preconditions: NumberList is filled with valid numbers
+;registers changed: EAX, EBX, ECX, EDX, ESI, EIP, EFL
 
 ;NumberList		[EBP + 24]
 ;arraySize		[EBP + 20]
@@ -235,7 +230,7 @@ loop tol									;tol(top of loop)
 
 	push	EBP				
 	mov		EBP, ESP
-	mov		ECX, [EBP + 20]					;Counter, arraySize 
+	
 	mov		ESI, [EBP + 24]					;First element of the array
 	mov		k, 0
 	mov		EBX, k
@@ -250,25 +245,25 @@ inner:
 	mov		EAX, 4
 	add		EAX, EBX
 	mov		EBX, EAX
-	mov		EAX, [ESI]		
+	mov		EAX, [ESI]				;first value
 	
-	mov		EDX, [ESI + EBX]
-	cmp		EAX, EDX
-	jge noSwap
+	mov		EDX, [ESI + EBX]		;second value
+	cmp		EAX, EDX				;compare for desending order
+	jge noSwap						
 	
 	mov		[ESI], EDX					;Swap, values stored in registers go in the
 	mov		[ESI+EBX], EAX				;other array value location
 	
 	
 noSwap:
-	inc		j
-mov		ECX, [EBP + 20]	
-cmp		j, ECX
+	inc		j							;inner loop counter
+	mov		ECX, [EBP + 20]					;When I pushed and popped ECX I overwrote my 
+	cmp		j, ECX							;local variables so I just called arraySize here
 jl		inner
 	
 
-	inc		k
-	mov		ECX, [EBP + 20]	
+	inc		k							;outer loop counter
+	mov		ECX, [EBP + 20]				;counter for array size
 	mov		EBX, k
 	add		ESI, 4
 	mov		EAX, ECX
@@ -276,36 +271,83 @@ jl		inner
 	cmp		EBX, EAX
 jl	outer
 	
-		
 	
 	pop		EBP
-	ret		8
+	ret		8			
 	
 	sortList ENDP
 
 	
 ;-----------Display Median PROC-----------
 ;Procedure to calculate and display the list median							FIX ME!
-;receives: none
+;receives: arraySize by value, and numberList (first element) by reference
 ;returns: none
-;preconditions:  none
-;registers changed: EDX, EIP, EFL
+;preconditions:  numberlist in in order
+;registers changed: EAX, EBX, ECX, EDX, EBP, EIP, EFL
 	
+;NumberList		[EBP + 12]
+;arraySize		[EBP + 8]
+
+
 	displayMedian proc
 	push	EBP				
 	mov		EBP, ESP
+	mov		EDX, OFFSET	showMedian			;Print the header
+	call	WriteString
+	call	CRLF
 
-	mov		EDX, OFFSET showMedian	
-		call	WriteString
-		call	CRLF
-	mov		EDX, OFFSET showPlace	
-		call	WriteString
-		call	CRLF
-		call	CRLF
-		call	CRLF
+	mov		ESI, [EBP + 12]					;First element of the array
+	mov		EDX, [EBP + 8]					;arraySize
+	mov		EAX, EDX
+	mov		EBX, 2
+	mov		EDX, 0
+	div		EBX
+	cmp		EDX, 0
+JNZ		oddNum
+
+mov		ECX, EAX
+evenloop:
 	
+	add		ESI, 4
+loop evenloop
+	
+	mov		EAX, [ESI]
+	add		EAX, [ESI - 4]
+
+	mov		EBX, 2
+	mov		EDX, 0
+	DIV		EBX
+
+	mov		EBX, EDX		;added this part from prog 4, if the division is .5 or greater
+	shr		EDX, 1			;I can do the average, not just throw out past dec
+	cmp		EDX, EBX		; shift bits to the right and compare
+JGE		display
+	inc		EAX				;increment if .5 or greater
+
+display:
+	
+	call writeDEC
+	call CRLF
+
+jmp exiting
+
+
+	oddNum:
+	mov		ECX, EAX
+addloop:
+	
+	add		ESI, 4
+loop addloop
+	
+	mov		EAX, [ESI]
+	call	WriteDec
+	call	CRLF
+	
+
+exiting:	
+call	CRLF
 	pop		EBP
-		ret	4
+	ret	8
 	displayMedian ENDP
 	
 	
